@@ -73,6 +73,9 @@ def test_set_file(filepath_pseudos, get_pseudo_potential_data):
         'z_valence="    1"',
         'z_valence="1    "',
         '1.0     Z valence',
+        'z_valence="1.1"'
+        'z_valence="1.100"'
+        'z_valence="1.100000000000001"'
     ),
 )
 def test_parse_z_valence(content):

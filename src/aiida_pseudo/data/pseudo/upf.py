@@ -30,7 +30,7 @@ def parse_element(content: str):
     raise ValueError(f'could not parse the element from the UPF content: {content}')
 
 
-def parse_z_valence(content: str) -> int:
+def parse_z_valence(content: str) -> typing.Union[int, float]:
     """Parse the content of the UPF file to determine the Z valence.
 
     :param stream: a filelike object with the binary content of the file.
@@ -48,9 +48,11 @@ def parse_z_valence(content: str) -> int:
                 raise ValueError(f'parsed value for the Z valence `{z_valence}` is not a valid number.') from exception
 
             if int(z_valence) != z_valence:
-                raise ValueError(f'parsed value for the Z valence `{z_valence}` is not an integer.')
-
-            return int(z_valence)
+                # Return as float
+                return z_valence
+            else:
+                # Return as int
+                return int(z_valence)
 
     raise ValueError(f'could not parse the Z valence from the UPF content: {content}')
 
@@ -89,21 +91,30 @@ class UpfData(PseudoPotentialData):
         self.z_valence = parse_z_valence(content)
 
     @property
-    def z_valence(self) -> typing.Optional[int]:
+    def z_valence(self) -> typing.Union[int,float,None]:
         """Return the Z valence.
 
         :return: the Z valence.
         """
         return self.base.attributes.get(self._key_z_valence, None)
+    
+    @property
+    def is_fractional(self) -> bool:
+        """Return whether the Z valence is fractional.
+
+        :return: ``True`` if the Z valence is fractional, ``False`` otherwise.
+        """
+        z_valence = self.z_valence
+        return isinstance(z_valence, float) and z_valence != int(z_valence)
 
     @z_valence.setter
-    def z_valence(self, value: int):
+    def z_valence(self, value: typing.Union[int,float]):
         """Set the Z valence.
 
         :param value: the Z valence.
-        :raises ValueError: if the value is not a positive integer.
+        :raises ValueError: if the value is not a positive number.
         """
-        if not isinstance(value, int) or value < 0:
-            raise ValueError(f'`{value}` is not a positive integer')
+        if not isinstance(value, typing.Union[int,float]) or value < 0:
+            raise ValueError(f'`{value}` is not a positive number')
 
         self.base.attributes.set(self._key_z_valence, value)
